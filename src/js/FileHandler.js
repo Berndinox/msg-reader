@@ -57,6 +57,18 @@ class FileHandler {
                 msgInfo = window.extractEml(fileBuffer);
             }
             
+            // 🧹 Sanitize attachment filenames to remove � and other invalid characters
+            if (msgInfo && msgInfo.attachments && Array.isArray(msgInfo.attachments)) {
+                msgInfo.attachments = msgInfo.attachments.map(att => {
+                    if (att.fileName) {
+                        att.fileName = att.fileName
+                            .replace(/\uFFFD/g, '')         // Remove replacement character
+                            .replace(/[^\x20-\x7E]/g, '')   // Remove other non-printables
+                            .trim();                        // Trim whitespace
+                    }
+                    return att;
+                });
+            }
             const message = this.messageHandler.addMessage(msgInfo, file.name);
             
             // Hide welcome screen and show app
